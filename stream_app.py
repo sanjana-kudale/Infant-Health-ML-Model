@@ -23,7 +23,7 @@ st.write("Model loaded successfully!")
 st.title("Machine Learning Model App")
 
 if uploaded_file is not None:
-    df = pd.read_csv('Synthetic-Infant-Health-Data')
+    df = pd.read_csv('Synthetic-Infant-Health-Data.csv')
     st.write("Dataset Preview:", df.head())
 
     # Make Predictions
