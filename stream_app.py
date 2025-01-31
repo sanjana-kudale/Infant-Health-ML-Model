@@ -47,7 +47,28 @@ if uploaded_file is not None:
     # Convert back to DataFrame with correct feature names
     df = pd.DataFrame(df_new, columns=feature_names)
 
-    # 🔹 4. Ensure Correct Column Order
+    st.write("🔍 Debugging Step: Checking DataFrame and Feature Names")
+
+    # Check if df_new exists
+    if 'df_new' in locals():
+        st.write("✅ df_new exists. Shape:", df_new.shape)
+    else:
+        st.error("❌ df_new is not defined!")
+
+    # Check if df exists
+    if 'df' in locals():
+        st.write("✅ df exists. Shape:", df.shape)
+    else:
+        st.error("❌ df is not defined!")
+
+        # Check if feature_names exist
+        st.write("Model Trained on Features:", feature_names)
+
+        # Check if df_new has the correct columns
+        st.write("df_new Columns (Before Reordering):", df_new.columns.tolist())
+
+    
+# 🔹 4. Ensure Correct Column Order
     missing_cols = set(feature_names) - set(df.columns)
     extra_cols = set(df.columns) - set(feature_names)
 
@@ -69,19 +90,6 @@ if uploaded_file is not None:
 
     st.write("Data ready for prediction (Feature Names):", df_final.columns.tolist())
 
-
-    try:
-        # Make Predictions
-        predictions = rf.predict(df)  # Fix: use df instead of x_test
-        df["Prediction"] = predictions
-        st.write("Predictions:", df)
-
-        # Download Predictions
-        st.download_button(
-            label="Download Predictions",
-            data=df.to_csv(index=False),
-            file_name="predictions.csv",
-            mime="text/csv"
-        )
-    except Exception as e:
-        st.error(f"Error in prediction: {e}")
+   predictions = rf.predict(df_new)
+df["Prediction"] = predictions
+st.write("Predictions:", df["Prediction"].head())
