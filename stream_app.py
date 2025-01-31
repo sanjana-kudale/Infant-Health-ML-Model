@@ -8,7 +8,7 @@ st.write("Hello, welcome to my Streamlit app!")
 
 df = pd.read_csv("Synthetic-Infant-Health-Data.csv")
 
-uploaded_file = st.file_uploader("Synthetic-Infant-Health-Data", type="csv")
+uploaded_file = st.file_uploader("rf_classifier, type="ipynb")
 
 if uploaded_file is not None:
     df = pd.read_csv('Synthetic-Infant-Health-Data.csv')
