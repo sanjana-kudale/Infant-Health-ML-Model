@@ -2,28 +2,35 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Title
+# Streamlit App Title
 st.title("Infant Health Prediction App")
 
 # Load Model
-model = joblib.load("rf_classifier.pkl")  # Ensure the model file is in the same directory
+@st.cache_resource
+def load_model():
+    return joblib.load("rf_classifier.pkl")  # Load saved model
+
+model = load_model()
 
 # File Uploader
 uploaded_file = st.file_uploader("Synthetic-Infant-Health-Data", type="csv")
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
-    st.write("Uploaded Data:", df.head())  # Display sample of uploaded data
+    st.write("Uploaded Data:", df.head())  # Show first few rows
 
-    # Make predictions
-    predictions = model.predict(df)
+    # Ensure the uploaded data has the same features as the trained model
+    try:
+        predictions = model.predict(df)  # Make Predictions
+        df["Prediction"] = predictions  # Add Predictions to DataFrame
+        st.write("Predictions:", df)  # Display results
 
-    # Display results
-    df["Prediction"] = predictions
-    st.write("Predictions:", df)
-    st.download_button(
-        label="Download Predictions",
-        data=df.to_csv(index=False),
-        file_name="predictions.csv",
-        mime="text/csv"
-    )
+        # Button to Download Results
+        st.download_button(
+            label="Download Predictions",
+            data=df.to_csv(index=False),
+            file_name="predictions.csv",
+            mime="text/csv"
+        )
+    except Exception as e:
+        st.error(f"Error in prediction: {e}")
