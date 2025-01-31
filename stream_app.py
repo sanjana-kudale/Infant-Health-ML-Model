@@ -14,7 +14,7 @@ if uploaded_file is not None:
     df = pd.read_csv('Synthetic-Infant-Health-Data.csv')
     st.write(df)
 
-grid = joblib.load("rf_classifier.ipynb")
+grid = joblib.load("rf_classifier.pkl")
 grid.best_estimator_
 model = joblib.load("rf_classifier.pkl")  # Ensure 'model.pkl' is in the repo
 
