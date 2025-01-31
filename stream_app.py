@@ -67,6 +67,9 @@ if uploaded_file is not None:
 
     df = df[feature_names]  # Reorder columns to match training
 
+    st.write("Data ready for prediction (Feature Names):", df_final.columns.tolist())
+
+
     try:
         # Make Predictions
         predictions = rf.predict(df)  # Fix: use df instead of x_test
