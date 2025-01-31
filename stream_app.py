@@ -2,9 +2,8 @@ import streamlit as st
 import pandas as pd
 import joblib
 from sklearn import preprocessing
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import IsolationForest
+from sklearn.feature_selection import SelectKBest, chi2
 
 st.title("Infant Health Prediction App")
 
@@ -17,7 +16,10 @@ def load_model():
 def load_features():
     return joblib.load("feature_names.pkl")  # Load selected feature names
 
-# Load the model and feature names
+@st.cache_resource
+def load_scaler():
+    return joblib.load("scaler.pkl")  # Load label encoder if saved
+
 rf = load_model()
 feature_names = load_features()
 
@@ -28,58 +30,55 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.write("Uploaded Data:", df.head())  # Display first few rows
 
-    # Remove "Unnamed: 0" if it exists in the dataset (often an extra index column)
     if "Unnamed: 0" in df.columns:
         df = df.drop(columns=["Unnamed: 0"])
 
-    # Debugging: Check column names after cleaning
-    st.write("DataFrame columns after cleanup:", df.columns.tolist())
+    st.write("Uploaded Data (Before Processing):", df.head())  # Show data before processing
 
-    # Label Encoding (if necessary)
+    # 🔹 Apply Label Encoding (Ensuring categorical data is converted)
+
+    # 🔹 1. Apply Label Encoding (Same as Training)
     le = preprocessing.LabelEncoder()
     df = df.apply(lambda col: le.fit_transform(col) if col.dtype == "object" else col)
 
-    # Outlier Detection (Optional)
+    # 🔹 2. Apply Isolation Forest for Outlier Detection
     iso = IsolationForest(contamination=0.05, random_state=0)
     clean = iso.fit_predict(df)
     df = df[clean == 1]  # Remove outliers
 
-    # Feature Selection (Ensure consistent features)
+    # 🔹 3. Feature Selection (Ensure same top 5 features are used)
     skf = SelectKBest(k=5, score_func=chi2)
-    df_new = skf.fit_transform(df, [0] * len(df))  # Dummy target to keep selection consistent
+    df_new = skf.fit_transform(df, [0] * len(df))  # Dummy target to keep feature selection consistent
+
+    # Convert back to DataFrame with correct feature names
     df = pd.DataFrame(df_new, columns=feature_names)
 
-    # Debugging: Check columns before making predictions
-    st.write("DataFrame columns after feature selection:", df.columns.tolist())
-    st.write("Expected feature names:", feature_names)
-
-    # Ensure the input data columns match the model's expected feature names
+    # 🔹 4. Ensure Correct Column Order
     missing_cols = set(feature_names) - set(df.columns)
     extra_cols = set(df.columns) - set(feature_names)
 
-    # Add missing columns with default value 0
+    # Debugging Feature Names
+    st.write("Model Trained on Features:", feature_names)
+    st.write("Uploaded CSV Features (After Processing):", list(df.columns))
+
     for col in missing_cols:
-        df[col] = 0
-
-    # Reorder columns to match the training data's feature names
-    df = df[feature_names]
-
-    # Drop extra columns
-    if extra_cols:
-        df = df.drop(columns=extra_cols)
+        df[col] = 0  # Add missing columns with 0 values
+        
+     if extra_cols:
+        df_new = df_new.drop(columns=extra_cols)
 
     # Final Debugging: Check column alignment after handling missing/extra columns
-    st.write("DataFrame columns after reordering and handling missing columns:", df.columns.tolist())
+    st.write("DataFrame columns after reordering and handling missing columns:", df_new.columns.tolist())
+
+    df = df[feature_names]  # Reorder columns to match training
 
     try:
         # Make Predictions
-        predictions = rf.predict(df)
+        predictions = rf.predict(x_test)
         df["Prediction"] = predictions
+        st.write("Predictions:", )
 
-        # Display predictions
-        st.write("Predictions:", df)
-
-        # Allow users to download the predictions as CSV
+        # Download Predictions
         st.download_button(
             label="Download Predictions",
             data=df.to_csv(index=False),
