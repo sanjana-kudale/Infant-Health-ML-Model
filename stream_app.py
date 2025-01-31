@@ -11,6 +11,11 @@ st.title("Infant Health Prediction App")
 @st.cache_resource
 def load_model():
     return joblib.load("rf_classifier.pkl")  # Load trained model
+    # Check if the model has the 'feature_names_in_' attribute
+    if hasattr(rf, 'feature_names_in_'):
+        print("Model has 'feature_names_in_' attribute")
+    else:
+        print("Model does NOT have 'feature_names_in_' attribute")
 
 @st.cache_resource
 def load_features():
