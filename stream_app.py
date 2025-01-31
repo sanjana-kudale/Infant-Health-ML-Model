@@ -16,7 +16,7 @@ if uploaded_file is not None:
 
 grid = joblib.load("rf_classifier.ipynb")
 grid.best_estimator_
-model = joblib.load("rf_classifier.ipynb")  # Ensure 'model.pkl' is in the repo
+model = joblib.load("rf_classifier.pkl")  # Ensure 'model.pkl' is in the repo
 
 st.write("Model loaded successfully!")
 
