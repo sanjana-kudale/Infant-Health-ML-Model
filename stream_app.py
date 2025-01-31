@@ -55,8 +55,8 @@ if uploaded_file is not None:
     df = pd.DataFrame(df_new, columns=feature_names)
 
     # 🔹 4. Ensure Correct Column Order
-    missing_cols = set(feature_names) - set(df.columns)
-    extra_cols = set(df.columns) - set(feature_names)
+    missing_cols = set(feature_names) - set(rf.columns)
+    extra_cols = set(rf.columns) - set(feature_names)
 
     # Debugging Feature Names
     st.write("Model Trained on Features:", feature_names)
