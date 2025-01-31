@@ -50,6 +50,10 @@ if uploaded_file is not None:
     missing_cols = set(feature_names) - set(df.columns)
     extra_cols = set(df.columns) - set(feature_names)
 
+    # Debugging Feature Names
+    st.write("Model Trained on Features:", feature_names)
+    st.write("Uploaded CSV Features (After Processing):", list(df.columns))
+
     for col in missing_cols:
         df[col] = 0  # Add missing columns with 0 values
 
