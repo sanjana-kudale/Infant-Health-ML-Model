@@ -63,8 +63,13 @@ if uploaded_file is not None:
 
     for col in missing_cols:
         df[col] = 0  # Add missing columns with 0 values
+    df = df[rf.feature_names_in_]  # Ensure the order matches the training set
 
-    df = df[feature_names]  # Reorder columns to match training
+    # 4. Ensure there are no extra columns
+    extra_cols = set(df.columns) - set(rf.feature_names_in_)
+    if extra_cols:
+        df = df.drop(columns=extra_cols)
+        df = df[feature_names]  # Reorder columns to match training
 
     try:
         # Make Predictions
