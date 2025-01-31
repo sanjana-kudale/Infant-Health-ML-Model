@@ -28,5 +28,5 @@ if uploaded_file is not None:
 
     # Make Predictions
     if st.button("Predict"):
-        predictions = model.predict(df)
+        predictions = model.predict(x_test)
         st.write("Predictions:", predictions)
