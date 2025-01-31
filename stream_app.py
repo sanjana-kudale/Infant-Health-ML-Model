@@ -91,5 +91,5 @@ if uploaded_file is not None:
     st.write("Data ready for prediction (Feature Names):", df_final.columns.tolist())
 
    predictions = rf.predict(df_new)
-df["Prediction"] = predictions
-st.write("Predictions:", df["Prediction"].head())
+    df["Prediction"] = predictions
+    st.write("Predictions:", df["Prediction"].head())
