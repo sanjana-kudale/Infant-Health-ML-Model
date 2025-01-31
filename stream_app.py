@@ -16,10 +16,6 @@ def load_model():
 def load_features():
     return joblib.load("feature_names.pkl")  # Load selected feature names
 
-@st.cache_resource
-def load_scaler():
-    return joblib.load("scaler.pkl")  # Load label encoder if saved
-
 rf = load_model()
 feature_names = load_features()
 
