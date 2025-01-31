@@ -68,9 +68,9 @@ if uploaded_file is not None:
 
     try:
         # Make Predictions
-        predictions = rf.predict(df)
+        predictions = rf.predict(x_test)
         df["Prediction"] = predictions
-        st.write("Predictions:", df)
+        st.write("Predictions:", x_test)
 
         # Download Predictions
         st.download_button(
