@@ -32,8 +32,6 @@ if uploaded_file is not None:
     st.write("Uploaded Data (Before Processing):", df.head())  # Show data before processing
 
     # 🔹 Apply Label Encoding (Ensuring categorical data is converted)
-
-    # 🔹 1. Apply Label Encoding (Same as Training)
     le = preprocessing.LabelEncoder()
     df = df.apply(lambda col: le.fit_transform(col) if col.dtype == "object" else col)
 
@@ -59,20 +57,21 @@ if uploaded_file is not None:
 
     for col in missing_cols:
         df[col] = 0  # Add missing columns with 0 values
-        
-     if extra_cols:
+
+    # Fix for extra columns
+    if extra_cols:  # Properly indented `if` block
         df_new = df_new.drop(columns=extra_cols)
 
-     # Final Debugging: Check column alignment after handling missing/extra columns
-     st.write("DataFrame columns after reordering and handling missing columns:", df_new.columns.tolist())
+    # Final Debugging: Check column alignment after handling missing/extra columns
+    st.write("DataFrame columns after reordering and handling missing columns:", df_new.columns.tolist())
 
-     df = df[feature_names]  # Reorder columns to match training
+    df = df[feature_names]  # Reorder columns to match training
 
     try:
         # Make Predictions
-        predictions = rf.predict(x_test)
+        predictions = rf.predict(df)  # Fix: use df instead of x_test
         df["Prediction"] = predictions
-        st.write("Predictions:", )
+        st.write("Predictions:", df)
 
         # Download Predictions
         st.download_button(
