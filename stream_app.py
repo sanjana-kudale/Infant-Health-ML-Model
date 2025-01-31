@@ -32,65 +32,32 @@ if uploaded_file is not None:
     if "Unnamed: 0" in df.columns:
         df = df.drop(columns=["Unnamed: 0"])
 
-    # Debugging: Check column names after cleanup
-    st.write("DataFrame columns after cleanup:", df.columns.tolist())
+    # Ensure that all the required columns are present
+    for col in feature_names:
+        if col not in df.columns:
+            df[col] = 0  # Add missing columns with default value 0
 
-    # Label Encoding (if necessary)
-    le = preprocessing.LabelEncoder()
-    df = df.apply(lambda col: le.fit_transform(col) if col.dtype == "object" else col)
+    # Debugging: Check columns after handling missing ones
+    st.write("DataFrame columns after ensuring all features:", df.columns.tolist())
 
-    # Outlier Detection (Optional)
-    iso = IsolationForest(contamination=0.05, random_state=0)
-    clean = iso.fit_predict(df)
-    df = df[clean == 1]  # Remove outliers
+    # Reorder columns to match the model's expected feature names
+    df = df[feature_names]
 
-    # Feature Selection (Ensure consistent features)
-    # Apply SelectKBest only on numerical features
-    X = df.select_dtypes(include=['number'])  # Select numerical columns only
+    # Debugging: Check columns after reordering
+    st.write("DataFrame columns after reordering:", df.columns.tolist())
 
-    # Apply SelectKBest with chi-squared test (requires positive values)
-    if X.shape[0] > 0:  # Ensure there are rows to work with
-        skf = SelectKBest(score_func=chi2, k=5)  # Select top 5 features
-        X_new = skf.fit_transform(X, [0] * len(X))  # Dummy target to keep selection consistent
-        df_new = pd.DataFrame(X_new, columns=feature_names)  # Assign selected features
-    else:
-        st.error("No numerical data available for feature selection.")
-        df_new = df  # Keep original data if no numerical data exists
-
-    # Debugging: Check columns before making predictions
-    st.write("DataFrame columns after feature selection:", df_new.columns.tolist())
-    st.write("Expected feature names:", feature_names)
-
-    # Ensure the input data columns match the model's expected feature names
-    missing_cols = set(feature_names) - set(df_new.columns)
-    extra_cols = set(df_new.columns) - set(feature_names)
-
-    # Add missing columns with default value 0
-    for col in missing_cols:
-        df_new[col] = 0
-
-    # Reorder columns to match the training data's feature names
-    df_new = df_new[feature_names]
-
-    # Drop extra columns
-    if extra_cols:
-        df_new = df_new.drop(columns=extra_cols)
-
-    # Final Debugging: Check column alignment after handling missing/extra columns
-    st.write("DataFrame columns after reordering and handling missing columns:", df_new.columns.tolist())
-
+    # Try making predictions
     try:
-        # Make Predictions
-        predictions = rf.predict(df_new)
-        df_new["Prediction"] = predictions
+        predictions = rf.predict(df)
+        df["Prediction"] = predictions
 
         # Display predictions
-        st.write("Predictions:", df_new)
+        st.write("Predictions:", df)
 
         # Allow users to download the predictions as CSV
         st.download_button(
             label="Download Predictions",
-            data=df_new.to_csv(index=False),
+            data=df.to_csv(index=False),
             file_name="predictions.csv",
             mime="text/csv"
         )
