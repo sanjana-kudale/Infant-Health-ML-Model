@@ -63,11 +63,11 @@ if uploaded_file is not None:
     st.write("Uploaded CSV Features (After Processing):", list(df.columns))
 
    # 1. Ensure all required columns are present
-missing_cols = set(rf.feature_names_in_) - set(rf.columns)
+   missing_cols = set(rf.feature_names_in_) - set(rf.columns)
 if missing_cols:
     for col in missing_cols:
         df[col] = 0  # Add missing columns with default value (e.g., 0)
-
+    
 # 2. Reorder columns to match the model's training order
 df = df[rf.feature_names_in_]  # This should now work without error
 
