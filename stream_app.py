@@ -30,6 +30,13 @@ if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
     st.write("Uploaded Data:", df.head())  # Display first few rows
 
+    if "Unnamed: 0" in df.columns:
+        df = df.drop(columns=["Unnamed: 0"])
+
+    st.write("Uploaded Data (Before Processing):", df.head())  # Show data before processing
+
+    # 🔹 Apply Label Encoding (Ensuring categorical data is converted)
+
     # 🔹 1. Apply Label Encoding (Same as Training)
     le = preprocessing.LabelEncoder()
     df = df.apply(lambda col: le.fit_transform(col) if col.dtype == "object" else col)
