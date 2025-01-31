@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import joblib
 from sklearn import preprocessing
-from sklearn.ensemble import IsolationForest
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_selection import SelectKBest, chi2
+from sklearn.ensemble import IsolationForest
 
 st.title("Infant Health Prediction App")
 
@@ -31,25 +32,47 @@ if uploaded_file is not None:
     if "Unnamed: 0" in df.columns:
         df = df.drop(columns=["Unnamed: 0"])
 
-    # Debugging: Check columns after cleanup
+    # Debugging: Check column names after cleaning
     st.write("DataFrame columns after cleanup:", df.columns.tolist())
 
-    # Ensure that all the required columns are present (like `XrayReport_Oligaemic`)
-    for col in feature_names:
-        if col not in df.columns:
-            df[col] = 0  # Add missing columns with default value 0
+    # Label Encoding (if necessary)
+    le = preprocessing.LabelEncoder()
+    df = df.apply(lambda col: le.fit_transform(col) if col.dtype == "object" else col)
 
-    # Debugging: Check columns after ensuring all features are present
-    st.write("DataFrame columns after adding missing features:", df.columns.tolist())
+    # Outlier Detection (Optional)
+    iso = IsolationForest(contamination=0.05, random_state=0)
+    clean = iso.fit_predict(df)
+    df = df[clean == 1]  # Remove outliers
 
-    # Reorder columns to match the model's expected feature names
+    # Feature Selection (Ensure consistent features)
+    skf = SelectKBest(k=5, score_func=chi2)
+    df_new = skf.fit_transform(df, [0] * len(df))  # Dummy target to keep selection consistent
+    df = pd.DataFrame(df_new, columns=feature_names)
+
+    # Debugging: Check columns before making predictions
+    st.write("DataFrame columns after feature selection:", df.columns.tolist())
+    st.write("Expected feature names:", feature_names)
+
+    # Ensure the input data columns match the model's expected feature names
+    missing_cols = set(feature_names) - set(df.columns)
+    extra_cols = set(df.columns) - set(feature_names)
+
+    # Add missing columns with default value 0
+    for col in missing_cols:
+        df[col] = 0
+
+    # Reorder columns to match the training data's feature names
     df = df[feature_names]
 
-    # Debugging: Check columns after reordering
-    st.write("DataFrame columns after reordering:", df.columns.tolist())
+    # Drop extra columns
+    if extra_cols:
+        df = df.drop(columns=extra_cols)
 
-    # Try making predictions
+    # Final Debugging: Check column alignment after handling missing/extra columns
+    st.write("DataFrame columns after reordering and handling missing columns:", df.columns.tolist())
+
     try:
+        # Make Predictions
         predictions = rf.predict(df)
         df["Prediction"] = predictions
 
