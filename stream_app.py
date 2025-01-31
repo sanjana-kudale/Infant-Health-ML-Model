@@ -2,9 +2,8 @@ import streamlit as st
 import pandas as pd
 import joblib
 from sklearn import preprocessing
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.feature_selection import SelectKBest, chi2
 from sklearn.ensemble import IsolationForest
+from sklearn.feature_selection import SelectKBest, chi2
 
 st.title("Infant Health Prediction App")
 
@@ -32,13 +31,16 @@ if uploaded_file is not None:
     if "Unnamed: 0" in df.columns:
         df = df.drop(columns=["Unnamed: 0"])
 
-    # Ensure that all the required columns are present
+    # Debugging: Check columns after cleanup
+    st.write("DataFrame columns after cleanup:", df.columns.tolist())
+
+    # Ensure that all the required columns are present (like `XrayReport_Oligaemic`)
     for col in feature_names:
         if col not in df.columns:
             df[col] = 0  # Add missing columns with default value 0
 
-    # Debugging: Check columns after handling missing ones
-    st.write("DataFrame columns after ensuring all features:", df.columns.tolist())
+    # Debugging: Check columns after ensuring all features are present
+    st.write("DataFrame columns after adding missing features:", df.columns.tolist())
 
     # Reorder columns to match the model's expected feature names
     df = df[feature_names]
