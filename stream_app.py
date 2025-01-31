@@ -89,7 +89,7 @@ if uploaded_file is not None:
     df = df[feature_names]  # Reorder columns to match training
 
     st.write("Data ready for prediction (Feature Names):", df_final.columns.tolist())
-
-   predictions = rf.predict(df_new)
+    
+    predictions = rf.predict(df_new)
     df["Prediction"] = predictions
     st.write("Predictions:", df["Prediction"].head())
