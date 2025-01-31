@@ -63,10 +63,10 @@ if uploaded_file is not None:
      if extra_cols:
         df_new = df_new.drop(columns=extra_cols)
 
-    # Final Debugging: Check column alignment after handling missing/extra columns
-    st.write("DataFrame columns after reordering and handling missing columns:", df_new.columns.tolist())
+        # Final Debugging: Check column alignment after handling missing/extra columns
+        st.write("DataFrame columns after reordering and handling missing columns:", df_new.columns.tolist())
 
-    df = df[feature_names]  # Reorder columns to match training
+        df = df[feature_names]  # Reorder columns to match training
 
     try:
         # Make Predictions
