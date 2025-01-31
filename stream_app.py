@@ -16,10 +16,6 @@ def load_model():
 def load_features():
     return joblib.load("feature_names.pkl")  # Load selected feature names
 
-@st.cache_resource
-def load_scaler():
-    return joblib.load("scaler.pkl")  # Load label encoder if saved
-
 rf = load_model()
 feature_names = load_features()
 
@@ -63,6 +59,7 @@ if uploaded_file is not None:
 
     for col in missing_cols:
         df[col] = 0  # Add missing columns with 0 values
+        
     df = df[rf.feature_names_in_]  # Ensure the order matches the training set
 
     # 4. Ensure there are no extra columns
