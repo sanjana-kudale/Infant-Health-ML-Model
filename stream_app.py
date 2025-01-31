@@ -57,29 +57,32 @@ if uploaded_file is not None:
     st.write("Model Trained on Features:", feature_names)
     st.write("Uploaded CSV Features (After Processing):", list(df.columns))
 
+   # 1. Ensure all required columns are present
+missing_cols = set(rf.feature_names_in_) - set(df.columns)
+if missing_cols:
     for col in missing_cols:
-        df[col] = 0  # Add missing columns with 0 values
-        
-    df = df[rf.feature_names_in_]  # Ensure the order matches the training set
+        df[col] = 0  # Add missing columns with default value (e.g., 0)
 
-    # 4. Ensure there are no extra columns
-    extra_cols = set(df.columns) - set(rf.feature_names_in_)
-    if extra_cols:
-        df = df.drop(columns=extra_cols)
-        df = df[feature_names]  # Reorder columns to match training
+# 2. Reorder columns to match the model's training order
+df = df[rf.feature_names_in_]  # This should now work without error
 
-    try:
-        # Make Predictions
-        predictions = rf.predict(df)
-        df["Prediction"] = predictions
-        st.write("Predictions:", df)
+# 3. Ensure there are no extra columns in df
+extra_cols = set(df.columns) - set(rf.feature_names_in_)
+if extra_cols:
+    df = df.drop(columns=extra_cols)  # Remove extra columns
 
-        # Download Predictions
-        st.download_button(
-            label="Download Predictions",
-            data=df.to_csv(index=False),
-            file_name="predictions.csv",
-            mime="text/csv"
-        )
-    except Exception as e:
-        st.error(f"Error in prediction: {e}")
+# Now you can make predictions
+predictions = rf.predict(df)
+df["Prediction"] = predictions
+
+# Display predictions
+st.write("Predictions:", df)
+
+# Optionally, allow for downloading predictions
+st.download_button(
+    label="Download Predictions",
+    data=df.to_csv(index=False),
+    file_name="predictions.csv",
+    mime="text/csv"
+)
+
