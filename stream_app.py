@@ -1,6 +1,9 @@
 import streamlit as st
 import streamlit as st
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 import joblib
 
 st.title("My First Streamlit App")
@@ -8,15 +11,15 @@ st.write("Hello, welcome to my Streamlit app!")
 
 df = pd.read_csv("Synthetic-Infant-Health-Data.csv")
 
-uploaded_file = st.file_uploader("rf_classifier, type="ipynb")
+uploaded_file = st.file_uploader("rf_classifier.ipynb, type="ipynb")
 
 if uploaded_file is not None:
     df = pd.read_csv('Synthetic-Infant-Health-Data.csv')
     st.write(df)
 
-grid = joblib.load("rf_classifier.pkl")
+grid = joblib.load("rf_classifier.ipynb")
 grid.best_estimator_
-model = joblib.load("rf_classifier.pkl")  # Ensure 'model.pkl' is in the repo
+model = joblib.load("rf_classifier.ipynb")  # Ensure 'model.pkl' is in the repo
 
 st.write("Model loaded successfully!")
 
