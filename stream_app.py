@@ -9,7 +9,7 @@ st.title("Infant Health Prediction App")
 model = joblib.load("rf_classifier.pkl")  # Ensure the model file is in the same directory
 
 # File Uploader
-uploaded_file = st.file_uploader("Upload a CSV file for prediction", type="csv")
+uploaded_file = st.file_uploader("Synthetic-Infant-Health-Data", type="csv")
 
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
@@ -24,6 +24,6 @@ if uploaded_file is not None:
     st.download_button(
         label="Download Predictions",
         data=df.to_csv(index=False),
-        file_name="predictions.csv",
+        file_name="Synthetic-Infant-Health-Data.csv",
         mime="text/csv"
     )
