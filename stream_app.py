@@ -16,7 +16,7 @@ if uploaded_file is not None:
     st.write("Uploaded Data:", df.head())  # Display sample of uploaded data
 
     # Make predictions
-    predictions = model.predict(x_test)
+    predictions = model.predict(df)
 
     # Display results
     df["Prediction"] = predictions
