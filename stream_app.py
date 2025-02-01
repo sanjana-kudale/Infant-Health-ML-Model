@@ -38,6 +38,8 @@ if uploaded_file is not None:
     df = df.apply(lambda col: le.fit_transform(col) if col.dtype == "object, int" else col)
 
     # 🔹 2. Apply Isolation Forest for Outlier Detection
+    df = df.select_dtypes(include=["number"])  # Keep only numeric columns
+    df = df.fillna(0)  # Replace NaN with 0
     iso = IsolationForest(contamination=0.05, random_state=0)
     clean = iso.fit_predict(df)
     df = df[clean == 1]  # Remove outliers
