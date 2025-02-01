@@ -4,3 +4,6 @@ numpy
 joblib
 scikit-learn
 matplotlib
+from sklearn import preprocessing
+from sklearn.ensemble import IsolationForest
+from sklearn.feature_selection import SelectKBest, chi2
