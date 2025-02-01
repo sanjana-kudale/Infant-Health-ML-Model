@@ -26,6 +26,9 @@ uploaded_file = st.file_uploader("Upload a CSV file for prediction", type="csv")
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
+        # 🔹 Check the first few rows to ensure the data is loaded correctly
+    st.write("Preview of Uploaded File:", df.head())
+
     # 🔹 Drop "Unnamed: 0" column if it exists
     if "Unnamed: 0" in df.columns:
         df = df.drop(columns=["Unnamed: 0"])
@@ -40,10 +43,13 @@ if uploaded_file is not None:
         le = preprocessing.LabelEncoder()
         df[col] = le.fit_transform(df[col].astype(str))  # Convert categories to numbers
 
-    # 🔹 Keep Only Numeric Columns
+    # 🔹 Keep Only Numeric Columns, Replace NaN with 0
     df = df.select_dtypes(include=[np.number])  # Keep only numeric data
     df = df.fillna(0)  # Replace NaN with 0
     df = df.astype(float)  # Convert all columns to float
+
+    # 🔹 Check the data after preprocessing
+    st.write("Data after preprocessing (before Isolation Forest):", df.head())
 
     # 🔹 🚀 FIX: Ensure df is not empty before applying Isolation Forest
     if df.empty:
@@ -55,8 +61,7 @@ if uploaded_file is not None:
     # 🔹 Apply Isolation Forest for Outlier Detection
     try:
         st.write(f"Shape of data before Isolation Forest: {df.shape}")
-        st.write("Data after preprocessing (before Isolation Forest):", df.head())  # Check data
-        iso = IsolationForest(contamination=0.01, random_state=0)  # Use a lower contamination rate
+        iso = IsolationForest(contamination=0.01, random_state=0)  # Lower contamination rate
         clean = iso.fit_predict(df)
         df = df[clean == 1]  # Remove outliers
     except Exception as e:
@@ -64,7 +69,8 @@ if uploaded_file is not None:
         st.stop()
 
 
-    # 🔹 Ensure All Feature Names Match
+
+   # 🔹 Ensure All Feature Names Match
     missing_cols = set(feature_names) - set(df.columns)
     extra_cols = set(df.columns) - set(feature_names)
 
@@ -73,10 +79,11 @@ if uploaded_file is not None:
         df[col] = 0
 
     df = df[feature_names]  # Reorder columns to match training
-
-    # Debugging
+    
+    # Debugging: Check the features before making predictions
     st.write("Model Trained on Features:", feature_names)
-    st.write("Uploaded CSV Features (After Processing):", list(df.columns))
+    st.write("Processed Features from Uploaded CSV:", list(df.columns))
+
 
     try:
         # 🔹 Make Predictions
