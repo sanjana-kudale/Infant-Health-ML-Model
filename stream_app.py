@@ -50,14 +50,19 @@ if uploaded_file is not None:
         st.error("Error: Processed DataFrame is empty. Please check the uploaded file.")
         st.stop()  # Stop execution if df is empty
 
+    
+    # 🔹 Apply Isolation Forest for Outlier Detection
     # 🔹 Apply Isolation Forest for Outlier Detection
     try:
-        iso = IsolationForest(contamination=0.05, random_state=0)
+        st.write(f"Shape of data before Isolation Forest: {df.shape}")
+        st.write("Data after preprocessing (before Isolation Forest):", df.head())  # Check data
+        iso = IsolationForest(contamination=0.01, random_state=0)  # Use a lower contamination rate
         clean = iso.fit_predict(df)
         df = df[clean == 1]  # Remove outliers
     except Exception as e:
         st.error(f"Isolation Forest Error: {e}")
         st.stop()
+
 
     # 🔹 Ensure All Feature Names Match
     missing_cols = set(feature_names) - set(df.columns)
