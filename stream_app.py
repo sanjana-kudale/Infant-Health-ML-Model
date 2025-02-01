@@ -1,11 +1,88 @@
 import streamlit as st
+import pandas as pd
+import joblib
+from sklearn import preprocessing
+from sklearn.ensemble import IsolationForest
+from sklearn.feature_selection import SelectKBest, chi2
 
-st.title("Upload Your Jupyter Notebook")
+st.title("Infant Health Prediction App")
 
-uploaded_file = st.file_uploader("Upload your rf_classifier.ipynb file", type="ipynb")
+# Load Model & Feature Names
+@st.cache_resource
+def load_model():
+    return joblib.load("rf_classifier.pkl")  # Load trained model
+
+@st.cache_resource
+def load_features():
+    return joblib.load("feature_names.pkl")  # Load selected feature names
+
+rf = load_model()
+feature_names = load_features()
+
+# File Uploader
+uploaded_file = st.file_uploader("Upload a CSV file for prediction", type="csv")
 
 if uploaded_file is not None:
-    st.success("File uploaded successfully!")
-    with open("rf_classifier.ipynb", "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    st.info("File saved as rf_classifier.ipynb")
+    df = pd.read_csv(uploaded_file)
+
+    # 🔹 Drop "Unnamed: 0" column if it exists
+    if "Unnamed: 0" in df.columns:
+        df = df.drop(columns=["Unnamed: 0"])
+
+    st.write("Uploaded Data (Before Processing):", df.head())  # Show data before processing
+
+    # 🔹 One-Hot Encoding (Must Match Training)
+    df = pd.get_dummies(df, drop_first=True)
+
+    # 🔹 Fix Label Encoding for Categorical Columns
+    for col in df.select_dtypes(include=["object"]).columns:
+        le = preprocessing.LabelEncoder()
+        df[col] = le.fit_transform(df[col].astype(str))  # Convert categories to numbers
+
+    # 🔹 Keep Only Numeric Columns for Isolation Forest
+    df = df.select_dtypes(include=["number"])
+
+    # 🔹 Fill Missing Values (NaN)
+    df = df.fillna(0)
+
+    # 🔹 Apply Isolation Forest for Outlier Detection
+    iso = IsolationForest(contamination=0.05, random_state=0)
+    clean = iso.fit_predict(df)
+    df = df[clean == 1]  # Remove outliers
+
+    # 🔹 Feature Selection (Ensure same top 5 features are used)
+    skf = SelectKBest(k=5, score_func=chi2)
+    df_new = skf.fit_transform(df, [0] * len(df))  # Dummy target to keep feature selection consistent
+
+    # Convert back to DataFrame with correct feature names
+    df = pd.DataFrame(df_new, columns=feature_names)
+
+    # 🔹 Ensure All Feature Names Match
+    missing_cols = set(feature_names) - set(df.columns)
+    extra_cols = set(df.columns) - set(feature_names)
+
+    # Add missing columns with 0 values
+    for col in missing_cols:
+        df[col] = 0
+
+    df = df[feature_names]  # Reorder columns to match training
+
+    # Debugging
+    st.write("Model Trained on Features:", feature_names)
+    st.write("Uploaded CSV Features (After Processing):", list(df.columns))
+
+    try:
+        # 🔹 Make Predictions
+        predictions = rf.predict(df)
+        df["Prediction"] = predictions
+        st.write("Predictions:", df)
+
+        # 🔹 Download Predictions
+        st.download_button(
+            label="Download Predictions",
+            data=df.to_csv(index=False),
+            file_name="predictions.csv",
+            mime="text/csv"
+        )
+    except Exception as e:
+        st.error(f"Error in prediction: {e}")
