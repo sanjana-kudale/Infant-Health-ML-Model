@@ -35,6 +35,10 @@ if uploaded_file is not None:
     # 🔹 Check for any missing values in the dataset
     st.write("Check for any missing values in the dataset:", df.isnull().sum())
 
+    # 🔹 Remove rows with all zeros or NaN values
+    df = df.loc[(df != 0).any(axis=1)]  # Remove rows where all columns are zero
+    st.write("Shape after removing empty rows:", df.shape)
+
     # 🔹 Drop "Unnamed: 0" column if it exists
     if "Unnamed: 0" in df.columns:
         df = df.drop(columns=["Unnamed: 0"])
@@ -54,6 +58,12 @@ if uploaded_file is not None:
     df = df.fillna(0)  # Replace NaN with 0
     df = df.astype(float)  # Convert all columns to float
 
+        # 🔹 Check for columns with all zeros or empty values
+    st.write("Check for columns with all zeros or empty values:")
+    st.write(df.columns[(df == 0).all()])  # Columns filled with zeros
+    st.write(df.columns[df.isnull().all()])  # Columns with all NaN values
+
+
     # 🔹 Preview the data after preprocessing
     st.write("Data after simple preprocessing (before Isolation Forest):", df.head())
 
@@ -67,7 +77,7 @@ if uploaded_file is not None:
         st.error("Error: Processed DataFrame is empty. Please check the uploaded file.")
         st.stop()
 
-
+    # 🔹 Apply Isolation Forest for Outlier Detection (Skip for debugging)
     
     # 🔹 Apply Isolation Forest for Outlier Detection
     # 🔹 Apply Isolation Forest for Outlier Detection
