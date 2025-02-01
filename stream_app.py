@@ -26,12 +26,12 @@ uploaded_file = st.file_uploader("Upload a CSV file for prediction", type="csv")
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
-    # 🔹 Drop "Unnamed: 0" column if it exists (index column)
-    if "Unnamed: 0" in df.columns:
-        df = df.drop(columns=["Unnamed: 0"])
-
     # 🔹 Preview the first few rows
     st.write("Preview of Uploaded File:", df.head())
+
+    # 🔹 Drop "Unnamed: 0" column if it exists
+    if "Unnamed: 0" in df.columns:
+        df = df.drop(columns=["Unnamed: 0"])
 
     # 🔹 Handle Object Columns (Convert to Numeric)
     for col in df.select_dtypes(include=["object"]).columns:
@@ -46,22 +46,21 @@ if uploaded_file is not None:
     missing_cols = set(feature_names) - set(df.columns)
     extra_cols = set(df.columns) - set(feature_names)
 
-    # Add missing columns with 0 values
+    # Add missing columns with 0 values (including `XrayReport_Oligaemic` if it's missing)
     for col in missing_cols:
         df[col] = 0
 
     # Remove extra columns that are not part of the training data
     df = df[feature_names]  # Reorder columns to match training
 
-    st.write("Missing columns added:", missing_cols)
-    st.write("Extra columns removed:", extra_cols)
-
     # 🔹 Ensure the DataFrame is not empty before making predictions
     if df.empty:
         st.error("Error: Processed DataFrame is empty. Please check the uploaded file.")
         st.stop()
 
+    # 🔹 Ensure that the uploaded data has the same columns as the training data
     st.write("Processed Data (Before Prediction):", df.head())  # See the final processed data
+    st.write("Expected Features:", feature_names)
 
     try:
         # 🔹 Make Predictions
