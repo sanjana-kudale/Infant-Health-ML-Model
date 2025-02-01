@@ -35,15 +35,20 @@ if uploaded_file is not None:
     # 🔹 Convert categorical variables to numerical (One-Hot Encoding)
     df = pd.get_dummies(df, drop_first=True)
 
-    # 🔹 Ensure all columns are numeric
+    # 🔹 Fix Label Encoding for Categorical Columns
     for col in df.select_dtypes(include=["object"]).columns:
         le = preprocessing.LabelEncoder()
         df[col] = le.fit_transform(df[col].astype(str))  # Convert categories to numbers
 
-    # 🔹 Drop non-numeric columns & ensure correct dtype
-    df = df.select_dtypes(include=[np.number])  # Keep only numeric columns
+    # 🔹 Keep Only Numeric Columns
+    df = df.select_dtypes(include=[np.number])  # Keep only numeric data
     df = df.fillna(0)  # Replace NaN with 0
     df = df.astype(float)  # Convert all columns to float
+
+    # 🔹 🚀 FIX: Ensure df is not empty before applying Isolation Forest
+    if df.empty:
+        st.error("Error: Processed DataFrame is empty. Please check the uploaded file.")
+        st.stop()  # Stop execution if df is empty
 
     # 🔹 Apply Isolation Forest for Outlier Detection
     try:
