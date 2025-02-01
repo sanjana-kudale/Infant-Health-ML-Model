@@ -32,8 +32,10 @@ if uploaded_file is not None:
     st.write("Uploaded Data (Before Processing):", df.head())  # Show data before processing
 
     # 🔹 Apply Label Encoding (Ensuring categorical data is converted)
+
+    # 🔹 1. Apply Label Encoding (Same as Training)
     le = preprocessing.LabelEncoder()
-    df = df.apply(lambda col: le.fit_transform(col) if col.dtype == "object" else col)
+    df = df.apply(lambda col: le.fit_transform(col) if col.dtype == "object, int" else col)
 
     # 🔹 2. Apply Isolation Forest for Outlier Detection
     iso = IsolationForest(contamination=0.05, random_state=0)
@@ -47,28 +49,7 @@ if uploaded_file is not None:
     # Convert back to DataFrame with correct feature names
     df = pd.DataFrame(df_new, columns=feature_names)
 
-    st.write("🔍 Debugging Step: Checking DataFrame and Feature Names")
-
-    # Check if df_new exists
-    if 'df_new' in locals():
-        st.write("✅ df_new exists. Shape:", df_new.shape)
-    else:
-        st.error("❌ df_new is not defined!")
-
-    # Check if df exists
-    if 'df' in locals():
-        st.write("✅ df exists. Shape:", df.shape)
-    else:
-        st.error("❌ df is not defined!")
-
-        # Check if feature_names exist
-        st.write("Model Trained on Features:", feature_names)
-
-        # Check if df_new has the correct columns
-        st.write("df_new Columns (Before Reordering):", df_new.columns.tolist())
-
-    
-# 🔹 4. Ensure Correct Column Order
+    # 🔹 4. Ensure Correct Column Order
     missing_cols = set(feature_names) - set(df.columns)
     extra_cols = set(df.columns) - set(feature_names)
 
@@ -79,17 +60,29 @@ if uploaded_file is not None:
     for col in missing_cols:
         df[col] = 0  # Add missing columns with 0 values
 
-    # Fix for extra columns
-    if extra_cols:  # Properly indented `if` block
-        df_new = df_new.drop(columns=extra_cols)
+        if extra_cols:
+            df_new = df_new.drop(columns=extra_cols)
 
-    # Final Debugging: Check column alignment after handling missing/extra columns
-    st.write("DataFrame columns after reordering and handling missing columns:", df_new.columns.tolist())
+            # Final Debugging: Check column alignment after handling missing/extra columns
+            st.write("DataFrame columns after reordering and handling missing columns:", df_new.columns.tolist())
 
-    df = df[feature_names]  # Reorder columns to match training
+            df = df[feature_names]  # Reorder columns to match training
 
-    st.write("Data ready for prediction (Feature Names):", df_final.columns.tolist())
-    
-    predictions = rf.predict(df_new)
-    df["Prediction"] = predictions
-    st.write("Predictions:", df["Prediction"].head())
+            st.write("Data ready for prediction (Feature Names):", df_final.columns.tolist())
+
+
+        try:
+            # Make Predictions
+            predictions = rf.predict(df)
+            df["Prediction"] = predictions
+            st.write("Predictions:", )
+
+            # Download Predictions
+            st.download_button(
+                label="Download Predictions",
+                data=df.to_csv(index=False),
+                file_name="predictions.csv",
+                mime="text/csv"
+            )
+        except Exception as e:
+            st.error(f"Error in prediction: {e}")
