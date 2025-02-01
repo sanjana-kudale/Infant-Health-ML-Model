@@ -4,6 +4,7 @@ import joblib
 from sklearn import preprocessing
 from sklearn.ensemble import IsolationForest
 from sklearn.feature_selection import SelectKBest, chi2
+import numpy as np
 
 st.title("Infant Health Prediction App")
 
@@ -29,33 +30,29 @@ if uploaded_file is not None:
     if "Unnamed: 0" in df.columns:
         df = df.drop(columns=["Unnamed: 0"])
 
-    st.write("Uploaded Data (Before Processing):", df.head())  # Show data before processing
+    st.write("Uploaded Data (Before Processing):", df.head())  # Show raw data
 
-    # 🔹 One-Hot Encoding (Must Match Training)
+    # 🔹 Convert categorical variables to numerical (One-Hot Encoding)
     df = pd.get_dummies(df, drop_first=True)
 
-    # 🔹 Fix Label Encoding for Categorical Columns
+    # 🔹 Ensure all columns are numeric
     for col in df.select_dtypes(include=["object"]).columns:
         le = preprocessing.LabelEncoder()
         df[col] = le.fit_transform(df[col].astype(str))  # Convert categories to numbers
 
-    # 🔹 Keep Only Numeric Columns for Isolation Forest
-    df = df.select_dtypes(include=["number"])
-
-    # 🔹 Fill Missing Values (NaN)
-    df = df.fillna(0)
+    # 🔹 Drop non-numeric columns & ensure correct dtype
+    df = df.select_dtypes(include=[np.number])  # Keep only numeric columns
+    df = df.fillna(0)  # Replace NaN with 0
+    df = df.astype(float)  # Convert all columns to float
 
     # 🔹 Apply Isolation Forest for Outlier Detection
-    iso = IsolationForest(contamination=0.05, random_state=0)
-    clean = iso.fit_predict(df)
-    df = df[clean == 1]  # Remove outliers
-
-    # 🔹 Feature Selection (Ensure same top 5 features are used)
-    skf = SelectKBest(k=5, score_func=chi2)
-    df_new = skf.fit_transform(df, [0] * len(df))  # Dummy target to keep feature selection consistent
-
-    # Convert back to DataFrame with correct feature names
-    df = pd.DataFrame(df_new, columns=feature_names)
+    try:
+        iso = IsolationForest(contamination=0.05, random_state=0)
+        clean = iso.fit_predict(df)
+        df = df[clean == 1]  # Remove outliers
+    except Exception as e:
+        st.error(f"Isolation Forest Error: {e}")
+        st.stop()
 
     # 🔹 Ensure All Feature Names Match
     missing_cols = set(feature_names) - set(df.columns)
@@ -85,4 +82,4 @@ if uploaded_file is not None:
             mime="text/csv"
         )
     except Exception as e:
-        st.error(f"Error in prediction: {e}")
+        st.error(f"Prediction Error: {e}")
