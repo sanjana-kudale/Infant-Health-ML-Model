@@ -46,6 +46,10 @@ if uploaded_file is not None:
     # Convert back to DataFrame with correct feature names
     df = pd.DataFrame(df_new, columns=feature_names)
 
+    # Debugging Feature Names
+    st.write("Model Trained on Features:", feature_names)
+    st.write("Uploaded CSV Features (After Processing):", list(df.columns))
+
     # 🔹 4. Ensure Correct Column Order
     missing_cols = set(feature_names) - set(df.columns)
     extra_cols = set(df.columns) - set(feature_names)
