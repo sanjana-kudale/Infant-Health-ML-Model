@@ -26,6 +26,10 @@ uploaded_file = st.file_uploader("Upload a CSV file for prediction", type="csv")
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
+    # 🔹 Drop "Unnamed: 0" column if it exists (index column)
+    if "Unnamed: 0" in df.columns:
+        df = df.drop(columns=["Unnamed: 0"])
+
     # 🔹 Preview the first few rows
     st.write("Preview of Uploaded File:", df.head())
 
