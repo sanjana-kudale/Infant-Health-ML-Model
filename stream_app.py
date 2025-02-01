@@ -26,12 +26,12 @@ uploaded_file = st.file_uploader("Upload a CSV file for prediction", type="csv")
 if uploaded_file is not None:
     df = pd.read_csv(uploaded_file)
 
-    # 🔹 Preview the first few rows
-    st.write("Preview of Uploaded File:", df.head())
-
-    # 🔹 Drop "Unnamed: 0" column if it exists
+    # 🔹 Remove "Unnamed: 0" if it exists (this is usually an index column)
     if "Unnamed: 0" in df.columns:
         df = df.drop(columns=["Unnamed: 0"])
+
+    # 🔹 Preview the first few rows
+    st.write("Preview of Uploaded File:", df.head())
 
     # 🔹 Handle Object Columns (Convert to Numeric)
     for col in df.select_dtypes(include=["object"]).columns:
@@ -49,6 +49,10 @@ if uploaded_file is not None:
     # Add missing columns with 0 values (including `XrayReport_Oligaemic` if it's missing)
     for col in missing_cols:
         df[col] = 0
+
+    # 🔹 Log which columns were added or removed
+    st.write("Missing columns added:", missing_cols)
+    st.write("Extra columns removed:", extra_cols)
 
     # Remove extra columns that are not part of the training data
     df = df[feature_names]  # Reorder columns to match training
