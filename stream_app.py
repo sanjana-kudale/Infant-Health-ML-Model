@@ -29,9 +29,6 @@ if uploaded_file is not None:
     # 🔹 Preview the first few rows
     st.write("Preview of Uploaded File:", df.head())
 
-    # 🔹 Check the data types of each column
-    st.write("Data types of each column:", df.dtypes)
-
     # 🔹 Handle Object Columns (Convert to Numeric)
     for col in df.select_dtypes(include=["object"]).columns:
         le = preprocessing.LabelEncoder()
@@ -41,34 +38,19 @@ if uploaded_file is not None:
     df = df.fillna(0)  # Replace NaN with 0
     df = df.astype(float)  # Convert all columns to float
 
-    # 🔹 Check if any columns are now filled with zeros or empty
-    st.write("Check for columns with all zeros or empty values:")
-    st.write(df.columns[(df == 0).all()])  # Columns filled with zeros
-    st.write(df.columns[df.isnull().all()])  # Columns with all NaN values
-
-    # 🔹 Remove rows with all zeros or NaN values
-    df = df.loc[(df != 0).any(axis=1)]  # Remove rows where all columns are zero
-    st.write("Shape after removing empty rows:", df.shape)
-
-    # 🔹 Preview the data after preprocessing
-    st.write("Data after preprocessing (before Isolation Forest):", df.head())
-
-    # 🔹 Apply Isolation Forest for Outlier Detection (optional)
-    try:
-        st.write(f"Shape of data before Isolation Forest: {df.shape}")
-        # iso = IsolationForest(contamination=0.01, random_state=0)
-        # clean = iso.fit_predict(df)
-        # df = df[clean == 1]  # Skip this step for now
-    except Exception as e:
-        st.error(f"Isolation Forest Error: {e}")
-        st.stop()
-
-    # 🔹 Ensure All Feature Names Match
+    # 🔹 Ensure All Feature Names Match with Training Data
     missing_cols = set(feature_names) - set(df.columns)
     extra_cols = set(df.columns) - set(feature_names)
 
-    st.write("Missing columns:", missing_cols)
-    st.write("Extra columns:", extra_cols)
+    # Add missing columns with 0 values
+    for col in missing_cols:
+        df[col] = 0
+
+    # Remove extra columns that are not part of the training data
+    df = df[feature_names]  # Reorder columns to match training
+
+    st.write("Missing columns added:", missing_cols)
+    st.write("Extra columns removed:", extra_cols)
 
     # 🔹 Ensure the DataFrame is not empty before making predictions
     if df.empty:
